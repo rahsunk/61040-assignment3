@@ -1,0 +1,24 @@
+# API Keys and sensitive data
+config.json
+
+# Generated files
+generated-schedule.json
+
+# TypeScript build output
+dist/
+
+# Node.js dependencies
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
