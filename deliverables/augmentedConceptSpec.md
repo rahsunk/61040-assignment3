@@ -10,6 +10,7 @@
         an owner User
         a set of Events
         a set of Tasks
+        a timestamp Number (static attribute, initially -1)
 
     a set of Events with
         a schedulePointer Schedule
@@ -26,6 +27,10 @@
 
 **actions**
 
+    initializeSchedule(owner: User): (schedule: Schedule)
+        requires: owner exists
+        effects: creates an empty schedule with owner as schedule.owner, with static attribute schedule.timestamp incrementing by 1
+
     addEvent(schedule: Schedule, startTime: Time, endTime: Time, repeatTime: RepeatTime): (event: Event)
         requires: schedule exists
         effects: creates and returns an event to add to the set of events in schedule with the given attributes, with schedulePointer pointing to schedule
@@ -37,6 +42,13 @@
     deleteEvent(schedule: Schedule, event: Event)
         requires: event is in the set of Events of schedule
         effects: deletes event in the set of Events in schedule
+
+    submitEvents(schedule: Schedule): (newShedule: Schedule | e: Error)
+        requires: schedule exists
+        effects:
+            Modifies schedule into newSchedule for schedule.owner such that if possible, all given events start, end, and repeat as specified
+
+            If doing this is not possible, then return an error.
 
     addTask(schedule: Schedule, deadline: Date, expectedCompletionTime: Number, priority: Percent): (task: Task)
         requires: schedule exists
@@ -54,7 +66,7 @@
         requires: schedule and llm exist
 
         effects:
-            Uses llm to create newSchedule for schedule.owner such that if possible, all given events start, end, and repeat as specified, and task scheduling is optimized by its attributes.
+            Uses llm to create newSchedule with newSchedule.timestamp = schedule.timestamp + 1 for schedule.owner such that if possible, all given events start, end, and repeat as specified, and task scheduling is optimized by its attributes.
 
             Generally, tasks with a sooner deadline, higher priority level, higher expectedCompletionTime, and higher completionTime are scheduled first.
 
