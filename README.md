@@ -7,8 +7,8 @@
 
 ### User Interaction:
 
-[Sketches]()\
-[User Journey]()
+[Sketches](deliverables/sketches.md)\
+[User Journey](deliverables/userJourney.md)
 
 ### Implementation
 

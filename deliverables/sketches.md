@@ -1,3 +1,3 @@
-# UI Sketches
+## UI Sketches
 
-![If not displayed, see assets/sketches.jpeg in root directory](/assets/sketches.jpeg)
+![If not displayed, see assets/sketch.jpg in root directory](../assets/sketch.jpg)
