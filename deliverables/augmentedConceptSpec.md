@@ -13,12 +13,14 @@
         a timestamp Number (static attribute, initially -1)
 
     a set of Events with
+        a name String
         a schedulePointer Schedule
         a startTime Time
         an endTime Time
         a repeatTime RepeatTime
 
     a set of Tasks with
+        a name String
         a schedulePointer Schedule
         a deadline Date
         an expectedCompletionTime Number
@@ -31,9 +33,9 @@
         requires: owner exists
         effects: creates an empty schedule with owner as schedule.owner, with static attribute schedule.timestamp incrementing by 1
 
-    addEvent(schedule: Schedule, startTime: Time, endTime: Time, repeatTime: RepeatTime): (event: Event)
+    addEvent(name: String, schedule: Schedule, startTime: Time, endTime: Time, repeatTime: RepeatTime): (event: Event)
         requires: schedule exists
-        effects: creates and returns an event to add to the set of events in schedule with the given attributes, with schedulePointer pointing to schedule
+        effects: creates and returns an event with name to add to the set of events in schedule with the given attributes, with schedulePointer pointing to schedule
 
     editEvent(schedule: Schedule, oldEvent: Event, startTime: Time, endTime: Time, repeatTime: RepeatTime)
         requires: oldEvent is in the set of Events of schedule
@@ -50,9 +52,9 @@
 
             If doing this is not possible, then return an error.
 
-    addTask(schedule: Schedule, deadline: Date, expectedCompletionTime: Number, priority: Percent): (task: Task)
+    addTask(name: String, schedule: Schedule, deadline: Date, expectedCompletionTime: Number, priority: Percent): (task: Task)
         requires: schedule exists
-        effects: returns and adds task to the set of tasks in schedule with the given attributes and 0% for completionLevel, with schedulePointer pointing to schedule
+        effects: returns and adds task with name to the set of tasks in schedule with the given attributes and 0% for completionLevel, with schedulePointer pointing to schedule
 
     editTask(schedule: Schedule, oldTask: Task, deadline: Date, expectedCompletionTime: Number, completionLevel: Percent priority: Percent)
         requires: oldTask is in the set of Tasks of schedule
