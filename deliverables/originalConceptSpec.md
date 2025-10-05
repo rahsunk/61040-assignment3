@@ -1,4 +1,4 @@
-### Original Concept Specification (from Assignment 2)
+## Original Concept Specification (from Assignment 2)
 
 **concept** ScheduleGenerator[User, Time, RepeatTime, Date, Percent]\
 **purpose** manages events and tasks for users to automatically generate a schedule that meets their needs\
