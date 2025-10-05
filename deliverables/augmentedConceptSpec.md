@@ -56,7 +56,7 @@
         requires: schedule exists
         effects: returns and adds task with name to the set of tasks in schedule with the given attributes and 0% for completionLevel, with schedulePointer pointing to schedule
 
-    editTask(schedule: Schedule, oldTask: Task, deadline: Date, expectedCompletionTime: Number, completionLevel: Percent priority: Percent)
+    editTask(schedule: Schedule, oldTask: Task, name: String, deadline: Date, expectedCompletionTime: Number, completionLevel: Percent priority: Percent)
         requires: oldTask is in the set of Tasks of schedule
         effects: modifies oldTasks in the set of Events in schedule with the given attributes
 
