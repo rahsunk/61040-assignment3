@@ -12,8 +12,8 @@
 
 ### Implementation
 
-[Augmented concept implementation]()\
-[Test Cases]()\
+[Augmented concept implementation](ScheduleGenerator.ts)\
+[Test Cases](ScheduleGenerator-tests.ts)\
 [Augmented concept spec](deliverables/augmentedConceptSpec.md)
 
 ### Richer test cases and prompts
