@@ -1,5 +1,5 @@
 /**
- * LLM Integration for DayPlanner
+ * LLM Integration for Taskmate
  *
  * Handles the requestAssignmentsFromLLM functionality using Google's Gemini API.
  * The LLM prompt is hardwired with user preferences and doesn't take external hints.

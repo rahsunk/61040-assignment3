@@ -12,7 +12,14 @@
     "llm": "npm run build && node -e \"require('./dist/dayplanner-tests.js').testLLMScheduling()\"",
     "mixed": "npm run build && node -e \"require('./dist/dayplanner-tests.js').testMixedScheduling()\""
   },
-  "keywords": ["gemini", "ai", "schedule", "student", "demo", "typescript"],
+  "keywords": [
+    "gemini",
+    "ai",
+    "schedule",
+    "student",
+    "demo",
+    "typescript"
+  ],
   "author": "Student Demo",
   "license": "MIT",
   "dependencies": {
