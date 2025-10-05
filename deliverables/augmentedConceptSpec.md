@@ -37,7 +37,7 @@
         requires: schedule exists
         effects: creates and returns an event with name to add to the set of events in schedule with the given attributes, with schedulePointer pointing to schedule
 
-    editEvent(schedule: Schedule, oldEvent: Event, startTime: Time, endTime: Time, repeatTime: RepeatTime)
+    editEvent(schedule: Schedule, oldEvent: Event, name: string, startTime: Time, endTime: Time, repeatTime: RepeatTime)
         requires: oldEvent is in the set of Events of schedule
         effects: modifies oldEvent in the set of Events in schedule with the given attributes
 
