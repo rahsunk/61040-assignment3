@@ -17,7 +17,6 @@
     "moduleResolution": "node"
   },
   "include": ["*.ts"],
-  "files": ["dayplanner.ts", "gemini-llm.ts", "dayplanner-tests.ts"],
   "exclude": ["node_modules", "dist"],
   "ts-node": {
     "esm": false,

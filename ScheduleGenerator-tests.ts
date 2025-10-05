@@ -8,7 +8,7 @@ import {
   ScheduleGenerator,
   formatTimeSlot,
   ScheduleResult,
-} from "./dayplanner";
+} from "./ScheduleGenerator";
 import { GeminiLLM, Config } from "./gemini-llm";
 
 /**

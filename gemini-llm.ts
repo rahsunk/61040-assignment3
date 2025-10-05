@@ -1,5 +1,5 @@
 /**
- * LLM Integration for Taskmate
+ * LLM Integration for ScheduleGenerator
  *
  * Handles the requestAssignmentsFromLLM functionality using Google's Gemini API.
  * The LLM prompt is hardwired with user preferences and doesn't take external hints.
