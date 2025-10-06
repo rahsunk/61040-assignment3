@@ -16,6 +16,8 @@
 [Test Cases](ScheduleGenerator-tests.ts)\
 [Augmented concept spec](ScheduleGenerator.spec)
 
+Run `npm start` to run test cases. Test cases pass most of the time (see two sections below for more information)
+
 ### Richer test cases and prompts
 
 [Test case and prompt experiments](deliverables/richerTestCasesAndPrompts.md)

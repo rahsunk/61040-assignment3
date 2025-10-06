@@ -31,13 +31,19 @@ function loadConfig(): Config {
 }
 
 function printSchedule(result: ScheduleResult): void {
-  const slots: {
+  type Slot = {
     [slot: number]: { type: string; name: string; duration: number }[];
-  } = {};
-  for (let i = 0; i < 48; i++) slots[i] = [];
+  };
+  const slots: Slot = {};
+
+  for (let i = 0; i < 48; i++) {
+    slots[i] = [];
+  }
+
   for (const block of result.blocks) {
     for (let i = 0; i < block.duration; i++) {
       const slot = block.startTime + i;
+
       if (slot < 48) {
         slots[slot].push({
           type: block.type,
@@ -50,24 +56,27 @@ function printSchedule(result: ScheduleResult): void {
 
   console.log("\n📅 Schedule of the Day");
   console.log("==================");
+
   let printedAny = false;
   for (let s = 0; s < 48; s++) {
     const items = slots[s];
+
     if (items.length === 0) continue;
     const isStart = items.some((it) =>
       result.blocks.find((b) => b.name === it.name && b.startTime === s)
     );
+
     if (isStart) {
       printedAny = true;
       const timeStr = formatTimeSlot(s);
-      const uniqNames = [...new Set(items.map((i) => i.name))];
-      for (const n of uniqNames) {
-        const blk = result.blocks.find(
+      const uniqueNames = [...new Set(items.map((i) => i.name))];
+      for (const n of uniqueNames) {
+        const block = result.blocks.find(
           (b) => b.name === n && b.startTime === s
         );
-        if (!blk) continue;
+        if (!block) continue;
         const durStr =
-          blk.duration === 1 ? "30 min" : `${blk.duration * 0.5} hours`;
+          block.duration === 1 ? "30 min" : `${block.duration * 0.5} hours`;
         console.log(`${timeStr} - ${n} (${durStr})`);
       }
     }
@@ -85,16 +94,16 @@ export async function testEventsOnly(): Promise<void> {
   console.log("\n🧪 TEST CASE 1: Events Only");
   console.log("===========================");
 
-  const gen = new ScheduleGenerator();
+  const generator = new ScheduleGenerator();
   const config = loadConfig();
   const llm = new GeminiLLM(config);
 
   console.log("📝 Adding fixed events...");
-  gen.addEvent("Breakfast", 14, 15);
-  gen.addEvent("Morning Workout", 16, 18);
-  gen.addEvent("Team Meeting", 30, 32);
+  generator.addEvent("Breakfast", 14, 15);
+  generator.addEvent("Morning Workout", 16, 18);
+  generator.addEvent("Team Meeting", 30, 32);
 
-  const result = await gen.generateSchedule(llm);
+  const result = await generator.generateSchedule(llm);
   printSchedule(result);
 }
 
@@ -106,32 +115,32 @@ export async function testLLMScheduling(): Promise<void> {
   console.log("\n🧪 TEST CASE 2: Tasks Only (LLM)");
   console.log("===============================");
 
-  const gen = new ScheduleGenerator();
+  const generator = new ScheduleGenerator();
   const config = loadConfig();
   const llm = new GeminiLLM(config);
 
   console.log("📝 Adding tasks...");
   const now = new Date();
-  gen.addTask(
+  generator.addTask(
     "Math Homework",
     new Date(now.getTime() + 6 * 60 * 60 * 1000),
     6,
     80
   ); // 2h
-  gen.addTask(
+  generator.addTask(
     "Project Work",
     new Date(now.getTime() + 6 * 60 * 60 * 1000),
     6,
     70
   ); // 3h
-  gen.addTask(
+  generator.addTask(
     "Gym Session",
     new Date(now.getTime() + 6 * 60 * 60 * 1000),
     6,
     50
   ); // 1h
 
-  const result = await gen.generateSchedule(llm);
+  const result = await generator.generateSchedule(llm);
   let lastPriorty = result.blocks[0].priority;
 
   for (const block of result.blocks) {
@@ -141,16 +150,17 @@ export async function testLLMScheduling(): Promise<void> {
     );
     lastPriorty = block.priority;
 
-    if (block.name !== "Gym Session")
+    if (block.name !== "Gym Session") {
       assert(
         block.startTime >= 10 && block.startTime <= 44,
         `${block.startTime} outside of time bounds`
       );
-    else
+    } else {
       assert(
         block.startTime >= 12 && block.startTime <= 44,
         `${block.startTime} outside of time bounds`
       );
+    }
   }
 
   printSchedule(result);
@@ -164,36 +174,36 @@ export async function testMixedScheduling(): Promise<void> {
   console.log("\n🧪 TEST CASE 3: Mixed (Events + Tasks)");
   console.log("====================================");
 
-  const gen = new ScheduleGenerator();
+  const generator = new ScheduleGenerator();
   const config = loadConfig();
   const llm = new GeminiLLM(config);
 
   console.log("📝 Adding events and tasks...");
-  gen.addEvent("Breakfast", 14, 15);
-  gen.addEvent("Morning Workout", 16, 18);
-  gen.addEvent("Team Meeting", 30, 32);
+  generator.addEvent("Breakfast", 14, 15);
+  generator.addEvent("Morning Workout", 16, 18);
+  generator.addEvent("Team Meeting", 30, 32);
 
   const now = new Date();
-  gen.addTask(
+  generator.addTask(
     "Study Session",
     new Date(now.getTime() + 7 * 60 * 60 * 1000),
     3,
     60
   ); // 1.5h
-  gen.addTask(
+  generator.addTask(
     "Grab a Snack",
     new Date(now.getTime() + 7 * 60 * 60 * 1000),
     1,
     60
   ); // 1h
-  gen.addTask(
+  generator.addTask(
     "Evening Reading",
     new Date(now.getTime() + 7 * 60 * 60 * 1000),
     2,
     60
   ); // 1h
 
-  const result = await gen.generateSchedule(llm);
+  const result = await generator.generateSchedule(llm);
 
   for (const block of result.blocks) {
     const seenTasks = new Array<ScheduledBlock>();
@@ -210,16 +220,17 @@ export async function testMixedScheduling(): Promise<void> {
       }
     }
 
-    if (block.name !== "Morning Workout")
+    if (block.name !== "Morning Workout") {
       assert(
         block.startTime >= 12 && block.startTime <= 44,
         `${block.startTime} outside of time bounds`
       );
-    else
+    } else {
       assert(
         block.startTime >= 10 && block.startTime <= 44,
         `${block.startTime} outside of time bounds`
       );
+    }
   }
 
   printSchedule(result);

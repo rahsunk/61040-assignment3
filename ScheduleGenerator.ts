@@ -420,7 +420,6 @@ function mergeAdjacentBlocks(blocks: ScheduledBlock[]): ScheduledBlock[] {
   return out;
 }
 
-// Small helpers (kept for potential debugging/printing during development)
 export function formatTimeSlot(timeSlot: number): string {
   const hours = Math.floor(timeSlot / 2);
   const minutes = (timeSlot % 2) * 30;
