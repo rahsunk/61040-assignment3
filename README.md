@@ -14,7 +14,7 @@
 
 [Augmented concept implementation](ScheduleGenerator.ts)\
 [Test Cases](ScheduleGenerator-tests.ts)\
-[Augmented concept spec](deliverables/augmentedConceptSpec.md)
+[Augmented concept spec](ScheduleGenerator.spec)
 
 ### Richer test cases and prompts
 
