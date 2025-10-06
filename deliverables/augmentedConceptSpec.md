@@ -33,7 +33,7 @@
         requires: owner exists
         effects: creates an empty schedule with owner as schedule.owner, with static attribute schedule.timestamp incrementing by 1
 
-    addEvent(name: String, schedule: Schedule, startTime: Time, endTime: Time, repeatTime: RepeatTime): (event: Event)
+    addEvent(schedule: Schedule, name: String, startTime: Time, endTime: Time, repeatTime: RepeatTime): (event: Event)
         requires: schedule exists
         effects: creates and returns an event with name to add to the set of events in schedule with the given attributes, with schedulePointer pointing to schedule
 
@@ -52,7 +52,7 @@
 
             If doing this is not possible, then return an error.
 
-    addTask(name: String, schedule: Schedule, deadline: Date, expectedCompletionTime: Number, priority: Percent): (task: Task)
+    addTask(schedule: Schedule, name: String, deadline: Date, expectedCompletionTime: Number, priority: Percent): (task: Task)
         requires: schedule exists
         effects: returns and adds task with name to the set of tasks in schedule with the given attributes and 0% for completionLevel, with schedulePointer pointing to schedule
 
