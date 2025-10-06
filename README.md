@@ -22,4 +22,4 @@
 
 ### Validators
 
-[Plausible issues]()
+[Plausible issues](deliverables/plausibleIssues.md)

@@ -6,7 +6,7 @@
 
 3.  For Test Case 3: Mixed (Events + Tasks), I changed all task deadlines and priority levels to be the same and added assertions to see if scheduled tasks (at least the first portion of tasks) were ordered by decreasing completion time.
 
-### Prompt Variants
+## Prompt Variants
 
 1. Initially, for Test Case 2, the LLM tended to schedule tasks in the early hours of the day, when students should be sleeping. The first thing I did was to try to update the prompt by giving a list of student preferences by giving preferred times for physical activity, classes/study sessions, and social events. All of these preferences were to be scheduled during active hours of the day. This helped by allowing the LLM to output tasks later in the day, but it started to cause overlaps, which automatically causes the output to fail. I realized that this was caused by conflicting information in the preferences, so I gave more freedom for some of the preferences, such as saying that physical activity is ideal early in the morning or late at night. This helped to resolve most of the issues with the task-only case. When I tried to do this with Test Case 3, I was getting inconsistent results running the test multiple times. Most times, it would fail the assertion despite the given preferences to not schedule activities too early in the morning. I realized that this was caused by the LLM not always understanding the time system, so just like in Prep 2, I explained the time system in the prompt. This improved the correctness rate of the tests, but ocassionally, the model returns schedules with tasks scheduled too early.
 
