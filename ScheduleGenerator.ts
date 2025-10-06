@@ -166,7 +166,7 @@ export class ScheduleGenerator {
     const prompt = this.createSchedulePrompt(blocks, this.tasks);
 
     // Retry mechanism for invalid LLM responses
-    let maxRetries = 1;
+    let maxRetries = 3;
     let retryCount = 0;
     let responseText: string;
 
