@@ -2,11 +2,11 @@
 
 concept
 
-    ScheduleGenerator[User, Time, RepeatTime, Date, Percent, GeminiLLM]\
+    ScheduleGenerator[User, Time, RepeatTime, Date, Percent, GeminiLLM]
 
 purpose
 
-    manages events and tasks for users to automatically generate a schedule that meets their needs\
+    manages events and tasks for users to automatically generate a schedule that meets their needs
 
 principle
 
