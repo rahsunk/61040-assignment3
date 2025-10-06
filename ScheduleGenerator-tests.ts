@@ -1,15 +1,18 @@
 /**
  * ScheduleGenerator Test Cases
  *
- * Demonstrates LLM-assisted scheduling around fixed events and tasks
+ * Demonstrates manual scheduling of events and LLM-assisted scheduling of tasks + events
  */
 
 import {
   ScheduleGenerator,
   formatTimeSlot,
   ScheduleResult,
+  status,
+  ScheduledBlock,
 } from "./ScheduleGenerator";
 import { GeminiLLM, Config } from "./gemini-llm";
+import assert from "assert";
 
 /**
  * Load configuration from config.json
@@ -45,7 +48,7 @@ function printSchedule(result: ScheduleResult): void {
     }
   }
 
-  console.log("\n📅 Daily Schedule");
+  console.log("\n📅 Schedule of the Day");
   console.log("==================");
   let printedAny = false;
   for (let s = 0; s < 48; s++) {
@@ -111,8 +114,8 @@ export async function testLLMScheduling(): Promise<void> {
   const now = new Date();
   gen.addTask(
     "Math Homework",
-    new Date(now.getTime() + 3 * 60 * 60 * 1000),
-    4,
+    new Date(now.getTime() + 6 * 60 * 60 * 1000),
+    6,
     80
   ); // 2h
   gen.addTask(
@@ -123,12 +126,33 @@ export async function testLLMScheduling(): Promise<void> {
   ); // 3h
   gen.addTask(
     "Gym Session",
-    new Date(now.getTime() + 10 * 60 * 60 * 1000),
-    2,
+    new Date(now.getTime() + 6 * 60 * 60 * 1000),
+    6,
     50
   ); // 1h
 
   const result = await gen.generateSchedule(llm);
+  let lastPriorty = result.blocks[0].priority;
+
+  for (const block of result.blocks) {
+    assert(
+      block.priority <= lastPriorty,
+      `${block.priority} has higher priority than ${lastPriorty}`
+    );
+    lastPriorty = block.priority;
+
+    if (block.name !== "Gym Session")
+      assert(
+        block.startTime >= 12 && block.startTime <= 44,
+        `${block.startTime} outside of time bounds`
+      );
+    else
+      assert(
+        block.startTime >= 10 && block.startTime <= 44,
+        `${block.startTime} outside of time bounds`
+      );
+  }
+
   printSchedule(result);
 }
 
@@ -152,19 +176,52 @@ export async function testMixedScheduling(): Promise<void> {
   const now = new Date();
   gen.addTask(
     "Study Session",
-    new Date(now.getTime() + 5 * 60 * 60 * 1000),
+    new Date(now.getTime() + 7 * 60 * 60 * 1000),
     3,
     60
   ); // 1.5h
-  gen.addTask("Lunch", new Date(now.getTime() + 7 * 60 * 60 * 1000), 2, 50); // 1h
+  gen.addTask(
+    "Grab a Snack",
+    new Date(now.getTime() + 7 * 60 * 60 * 1000),
+    1,
+    60
+  ); // 1h
   gen.addTask(
     "Evening Reading",
-    new Date(now.getTime() + 12 * 60 * 60 * 1000),
+    new Date(now.getTime() + 7 * 60 * 60 * 1000),
     2,
-    40
+    60
   ); // 1h
 
   const result = await gen.generateSchedule(llm);
+
+  for (const block of result.blocks) {
+    const seenTasks = new Array<ScheduledBlock>();
+
+    if (block.type === status.TASK) {
+      if (!seenTasks.includes(block)) {
+        const lastSeenTask =
+          seenTasks[seenTasks.length - 1]?.completionTime ?? Number.MAX_VALUE;
+        assert(
+          block.completionTime <= lastSeenTask,
+          `${block.completionTime} completion time > ${lastSeenTask}`
+        );
+        seenTasks.push(block);
+      }
+    }
+
+    if (block.name !== "Morning Workout")
+      assert(
+        block.startTime >= 12 && block.startTime <= 44,
+        `${block.startTime} outside of time bounds`
+      );
+    else
+      assert(
+        block.startTime >= 10 && block.startTime <= 44,
+        `${block.startTime} outside of time bounds`
+      );
+  }
+
   printSchedule(result);
 }
 

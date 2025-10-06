@@ -27,7 +27,9 @@ export interface ScheduledBlock {
   name: string; // event/task name
   startTime: number; // half-hour slot
   duration: number; // number of slots
-  type: "event" | "task";
+  type: status.EVENT | status.TASK;
+  priority: number; // a percent 0 to 100
+  completionTime: number; // half-hour slot when the block is completed
 }
 
 export interface ScheduleResult {
@@ -154,27 +156,52 @@ export class ScheduleGenerator {
         name: event.name,
         startTime: event.startTime,
         duration: event.endTime - event.startTime,
-        type: "event",
+        type: status.EVENT,
+        priority: 50, // default priority
+        completionTime: event.endTime,
       });
     }
 
     // Build prompt and request assignments from Gemini for tasks
     const prompt = this.createSchedulePrompt(blocks, this.tasks);
-    const responseText = await llm.executeLLM(prompt);
-    // Apply LLM-proposed task blocks with validation against fixed event occupancy
-    this.applyTaskAssignmentsFromLLM(
-      responseText,
-      occupied,
-      blocks,
-      this.tasks
-    );
+
+    // Retry mechanism for invalid LLM responses
+    let maxRetries = 1;
+    let retryCount = 0;
+    let responseText: string;
+
+    while (retryCount < maxRetries) {
+      try {
+        responseText = await llm.executeLLM(prompt);
+        // Apply LLM-proposed task blocks with validation against fixed event occupancy
+        this.applyTaskAssignmentsFromLLM(
+          responseText,
+          occupied,
+          blocks,
+          this.tasks
+        );
+        break; // Success, exit retry loop
+      } catch (error) {
+        retryCount++;
+        if (retryCount >= maxRetries) {
+          throw new Error(
+            `LLM failed to provide valid assignments after ${maxRetries} attempts. Last error: ${
+              (error as Error).message
+            }`
+          );
+        }
+        console.log(
+          `⚠️  LLM provided invalid assignments (attempt ${retryCount}/${maxRetries}), retrying...`
+        );
+      }
+    }
 
     this.timestamp += 1;
     // Normalize/merge adjacent blocks with same label and type
     const merged = mergeAdjacentBlocks(blocks);
     return {
       timestamp: this.timestamp,
-      blocks: merged.sort((a, b) => a.startTime - b.startTime),
+      blocks: merged.sort((a, b) => b.priority - a.priority), // Sort by priority descending
     };
   }
   /**
@@ -186,7 +213,7 @@ export class ScheduleGenerator {
     tasks: Task[]
   ): string {
     const fixedEvents = eventBlocks
-      .filter((b) => b.type === "event")
+      .filter((b) => b.type === status.EVENT)
       .map((b) => ({
         name: b.name,
         startTime: b.startTime,
@@ -213,12 +240,26 @@ export class ScheduleGenerator {
       ]
     }
 
-    Hard constraints:
-    - Do not overlap any fixed events listed below.
-    - Use only integer slots within 0..47.
+    TIME SYSTEM:
+      - Times are represented in half-hour slots starting at midnight
+      - Slot 0 = 12:00 AM, Slot 13 = 6:30 AM, Slot 26 = 1:00 PM, Slot 38 = 7:00 PM, etc.
+      - There are 48 slots total (24 hours x 2)
+      - Valid slots are 0-47 (midnight to 11:30 PM)
+
+    HARD CONSTRAINTS:
+    - Do not overlap any tasks with each other or with fixed events.
+    - Do not overlap multiple blocks of the same task with each other.
     - duration must be >= 1 and sum of durations per task should be <= expectedCompletionTime for that task.
-    - You may split a task into multiple blocks.
-    - Prefer scheduling tasks earlier when possible, and consider sooner deadlines and higher priority first.
+    - You may split a task into multiple blocks, but each block must be in a separate, non-overlapping time slot.
+    - Consider tasks with sooner deadlines, higher priority, and greater completionTimes to be scheduled earlier than tasks with later deadlines, lower priority, and smaller completionTimes.
+
+    STUDENT PREFERENCES:
+    - Avoid scheduling activities too late at night (after slot 44) or too early in the morning (before slot 12)
+    - Exercise activities work well in the morning (slots 12 to 20) and at night (slots 36 to 42)
+    - Classes and study time should be scheduled during focused hours (slots 18 to 42)
+    - Meals should be at regular intervals (breakfast: slots 14 to 18, lunch: slots 24 to 26, dinner: slots 36 to 40)
+    - Social activities and relaxation are good for evenings (slots 36 to 42)
+    - Try to buffer time between different types of activities
 
     FIXED_EVENTS:
     ${fixedSection}
@@ -253,6 +294,9 @@ export class ScheduleGenerator {
 
     // Track how much of each task we have scheduled so far
     const scheduledSoFar = new Map<string, number>();
+
+    // Track occupied slots including task assignments from this LLM response
+    const currentOccupied = [...occupied];
 
     const issues: string[] = [];
     const validated: {
@@ -307,7 +351,7 @@ export class ScheduleGenerator {
       // ensure slots free
       let conflict = false;
       for (let t = s; t < s + d; t++) {
-        if (occupied[t] !== "free") {
+        if (currentOccupied[t] !== status.FREE) {
           conflict = true;
           break;
         }
@@ -327,7 +371,7 @@ export class ScheduleGenerator {
       const place = Math.min(remaining, d);
 
       // reserve slots
-      for (let t = s; t < s + place; t++) occupied[t] = status.TASK;
+      for (let t = s; t < s + place; t++) currentOccupied[t] = status.TASK;
       scheduledSoFar.set(task, used + place);
       validated.push({ taskName: task, startTime: s, duration: place });
     }
@@ -339,11 +383,17 @@ export class ScheduleGenerator {
     }
 
     for (const v of validated) {
+      // Find the original task to get its priority
+      const originalTask = tasks.find((t) => t.name === v.taskName);
+      const taskPriority = originalTask ? originalTask.priority : 50; // fallback to 50 if task not found
+
       blocks.push({
         name: v.taskName,
         startTime: v.startTime,
         duration: v.duration,
-        type: "task",
+        type: status.TASK,
+        priority: taskPriority,
+        completionTime: v.startTime + v.duration,
       });
     }
   }
@@ -358,9 +408,11 @@ function mergeAdjacentBlocks(blocks: ScheduledBlock[]): ScheduledBlock[] {
       last &&
       last.type === b.type &&
       last.name === b.name &&
+      last.priority === b.priority &&
       last.startTime + last.duration === b.startTime
     ) {
       last.duration += b.duration;
+      last.completionTime = last.startTime + last.duration;
     } else {
       out.push({ ...b });
     }

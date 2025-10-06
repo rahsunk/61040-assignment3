@@ -1,0 +1,1 @@
+I asked Cursor AI for some guidance here, and it created a "retry" mechanism such that the Gemini API will be called up to 3 times when generateSchedule is called and an error is encountered. This helped to significantly reduce the number of overlapping errors I received.
