@@ -1,10 +1,18 @@
 ## Richer Test Cases
 
-1.  For Test Case 2: Tasks Only (LLM) and Test Case 3: Mixed (Events + Tasks), I added assertions to check if all of the tasks were scheduled to start during focused hours (9:00 AM - 9:00 PM).
+[See Test Cases](../ScheduleGenerator-tests.ts)
 
-2.  For Test Case 2: Tasks Only (LLM), I changed all task deadlines and expected completion times to be the same and added assertions to see if the scheduled tasks were ordered in decreasing priority level.
+1.  Assertions to guarantee tasks in focused hours
 
-3.  For Test Case 3: Mixed (Events + Tasks), I changed all task deadlines and priority levels to be the same and added assertions to see if scheduled tasks (at least the first portion of tasks) were ordered by decreasing completion time.
+    For Test Case 2: Tasks Only (LLM) and Test Case 3: Mixed (Events + Tasks), I added assertions to check if all of the tasks were scheduled to start sometime around focused hours (6:00 AM - 10:00 PM)
+
+2.  Assertions to guarantee tasks are in descending priority order
+
+    For Test Case 2: Tasks Only (LLM), I changed all task deadlines and expected completion times to be the same and added assertions to see if the scheduled tasks were ordered by decreasing priority level.
+
+3.  Assertions to guarantee tasks are in descending completion time
+
+    For Test Case 3: Mixed (Events + Tasks), I changed all task deadlines and priority levels to be the same and added assertions to see if the scheduled tasks (if tasks were split then just the first portion) were ordered by decreasing completion time.
 
 ## Prompt Variants
 

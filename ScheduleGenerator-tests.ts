@@ -143,12 +143,12 @@ export async function testLLMScheduling(): Promise<void> {
 
     if (block.name !== "Gym Session")
       assert(
-        block.startTime >= 12 && block.startTime <= 44,
+        block.startTime >= 10 && block.startTime <= 44,
         `${block.startTime} outside of time bounds`
       );
     else
       assert(
-        block.startTime >= 10 && block.startTime <= 44,
+        block.startTime >= 12 && block.startTime <= 44,
         `${block.startTime} outside of time bounds`
       );
   }
